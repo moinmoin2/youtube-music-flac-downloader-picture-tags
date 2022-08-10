@@ -6,9 +6,9 @@ This is script which you can use to download single titles or playlists from you
 
 You just have to install using the package manager of you choice
 
-* ffmpeg
-* ImageMagick
-* youtube-dl
+* `ffmpeg`
+* `ImageMagick`
+* `youtube-dl`
 
 then you have to download the script using git or wget and make it executable using 
 
