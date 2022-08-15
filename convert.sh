@@ -5,60 +5,52 @@ echo "Youtube Music Downloader"
 echo "Post the Playlist link or link of the song"
 read url
 short_url=$(echo "$url" | sed s/"&feature=share"//)
-youtube-dl --ignore-errors -x --audio-format flac --add-metadata --write-thumbnail "$short_url"
+youtube-dl -x --audio-format flac --add-metadata --write-thumbnail --id "$short_url"
 
 #getting full files names
-for i in *.flac;
-  
+for i in *.flac; do
 
-  #getting file names
-  #var name without file extension and everything after -
-  do name=`echo "$i" | cut -d'-' -f1`
-  echo $name
-	#remove only file extension from name
- 	picture=$(echo "$i" | awk '{ print substr( $0, 1, length($0)-5 ) }')
 
+  #remove only file extension from name
+  name=$(echo "$i" | awk '{ print substr( $0, 1, length($0)-5 ) }')
+  finale_picture="${name}new.jpg"
+  #echo $finale_picture
   #for webp files
 
-	if [[ -f "${picture}.webp" ]]; then
-		webp="${picture}.webp"
-                #original name without file extension and with removed spaces
-		new_webp=$(echo "${picture// /}")
-                echo $new_webp
-                mv "$webp" "${new_webp}.webp"
-		square_image=$(echo "${name// /}")
-		#convert them to diffrent resolution
-		convert "${new_webp}.webp" -crop 720x720+280 "${square_image}.jpg"
-		rm "${new_webp}.webp"
-	fi
-  
-  #for jpg files
-	if [[ -f "${picture}.jpg" ]]; then
-		jpg="${picture}.jpg"
-		new_jpg=$(echo "${picture// /}")
-		#original name without file extension and with removed spaces
-		echo $new
-		mv "$jpg" "${new_jpg}.jpg"
-		square_image=$(echo "${name// /}")
-		#convert them to diffrent resolution
-		convert "${new_jpg}.jpg" -crop 720x720+280 "${square_image}.jpg"
-		rm "${new_jpg}.jpg"
-	fi
+    if [[ -f "${name}.webp" ]]; then
+        #convert them to diffrent resolution
+        convert "${name}.webp" -crop 720x720+280 "$finale_picture"
+        rm -v "${name}.webp"
+    fi
 
-echo "$i"
-new_file_name=$(echo "${i// /}")
-mv "$i" "$new_file_name"
+  #for jpg files
+    if [[ -f "${name}.jpg" ]]; then
+        #convert them to diffrent resolution
+        convert "${name}.jpg" -crop 720x720+280 "$finale_picture"
+        rm -v "${name}.jpg"
+    fi
+
+
+artist=$(exiftool -q -s3 -Artist "$i" | cut -d',' -f1)
+#echo $artist
+
+title=$(exiftool -q -s3 -Title "$i")
+#echo $title
+
+final="${artist} - ${title}"
+#echo $finale
+
 #merging files
-ffmpeg -i "$new_file_name" -i "${square_image}.jpg" -s 720x720 -map 0:0 -map 1:0 -disposition:v:0 attached_pic -c:v:0 mjpeg -ab 320k -map_metadata 0 -id3v2_version 3 "${name}.flac" 
+ffmpeg -i "$i" -i "${name}new.jpg" -s 720x720 -map 0:0 -map 1:0 -disposition:v:0 attached_pic -c:v:0 mjpeg -ab 320k -map_metadata 0 -y -id3v2_version 3 "${final}.flac" 
 
 #deleting not needed files
-rm "$new_file_name"
-rm "${square_image}.jpg"
+rm -v "$i"
+rm -v "$finale_picture"
 
-
-echo "Finish"
 
 done
 
 
-echo "Everything is done"
+echo "Everything is done ......  Finish"
+
+
